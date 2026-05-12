@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Document Processing Agent</title>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -18,11 +19,11 @@
       padding: 40px 16px;
     }
 
-    .container { width: 100%; max-width: 760px; }
+    .container { width: 100%; max-width: 800px; }
 
     header { text-align: center; margin-bottom: 36px; }
-    header h1 { font-size: 2rem; font-weight: 700; color: #fff; letter-spacing: -0.5px; }
-    header p { margin-top: 8px; color: #888; font-size: 0.95rem; }
+    header h1 { font-size: 1.9rem; font-weight: 700; color: #fff; letter-spacing: -0.5px; }
+    header p { margin-top: 8px; color: #666; font-size: 0.9rem; }
 
     .card {
       background: #18181f;
@@ -32,25 +33,21 @@
       margin-bottom: 20px;
     }
 
-    label { display: block; font-size: 0.85rem; color: #aaa; margin-bottom: 8px; font-weight: 500; }
+    label { display: block; font-size: 0.8rem; color: #888; margin-bottom: 8px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; }
 
     .drop-zone {
-      border: 2px dashed #333;
+      border: 2px dashed #2a2a35;
       border-radius: 10px;
-      padding: 28px;
+      padding: 24px;
       text-align: center;
       cursor: pointer;
       transition: border-color 0.2s, background 0.2s;
       margin-bottom: 20px;
     }
-    .drop-zone:hover, .drop-zone.drag-over {
-      border-color: #6c63ff;
-      background: rgba(108,99,255,0.06);
-    }
-    .drop-zone .icon { font-size: 2rem; margin-bottom: 8px; }
-    .drop-zone p { color: #666; font-size: 0.9rem; }
-    .drop-zone .file-name { color: #6c63ff; font-size: 0.9rem; margin-top: 8px; font-weight: 500; }
-
+    .drop-zone:hover, .drop-zone.drag-over { border-color: #6c63ff; background: rgba(108,99,255,0.05); }
+    .drop-zone .icon { font-size: 1.8rem; margin-bottom: 6px; }
+    .drop-zone p { color: #555; font-size: 0.85rem; }
+    .drop-zone .file-name { color: #6c63ff; font-size: 0.85rem; margin-top: 8px; font-weight: 500; }
     #file-input { display: none; }
 
     textarea {
@@ -59,94 +56,161 @@
       border: 1px solid #2a2a35;
       border-radius: 10px;
       color: #e8e8f0;
-      font-size: 0.95rem;
-      padding: 14px;
+      font-size: 0.92rem;
+      padding: 13px;
       resize: vertical;
-      min-height: 110px;
+      min-height: 100px;
       font-family: inherit;
       outline: none;
       transition: border-color 0.2s;
+      line-height: 1.5;
     }
     textarea:focus { border-color: #6c63ff; }
-    textarea::placeholder { color: #444; }
+    textarea::placeholder { color: #3a3a48; }
 
-    .examples {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 10px;
-    }
+    .examples { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
     .example-chip {
       background: #1e1e28;
       border: 1px solid #2a2a35;
       border-radius: 20px;
       padding: 5px 12px;
-      font-size: 0.78rem;
-      color: #888;
+      font-size: 0.75rem;
+      color: #777;
       cursor: pointer;
       transition: border-color 0.2s, color 0.2s;
     }
-    .example-chip:hover { border-color: #6c63ff; color: #c0b9ff; }
+    .example-chip:hover { border-color: #6c63ff; color: #b0aaff; }
 
     button[type="submit"] {
       width: 100%;
-      margin-top: 20px;
-      padding: 14px;
+      margin-top: 18px;
+      padding: 13px;
       background: #6c63ff;
       color: #fff;
       border: none;
       border-radius: 10px;
-      font-size: 1rem;
+      font-size: 0.95rem;
       font-weight: 600;
       cursor: pointer;
       transition: background 0.2s;
+      letter-spacing: 0.2px;
     }
     button[type="submit"]:hover { background: #5a52e0; }
-    button[type="submit"]:disabled { background: #333; color: #666; cursor: not-allowed; }
+    button[type="submit"]:disabled { background: #252530; color: #555; cursor: not-allowed; }
 
+    /* Spinner */
+    .spinner-wrap { display: none; text-align: center; padding: 32px; }
+    .spinner-wrap.active { display: block; }
     .spinner {
-      display: none;
-      text-align: center;
-      padding: 24px;
-      color: #666;
-    }
-    .spinner.active { display: block; }
-    .spinner::after {
-      content: "";
       display: inline-block;
-      width: 28px;
-      height: 28px;
+      width: 32px; height: 32px;
       border: 3px solid #2a2a35;
       border-top-color: #6c63ff;
       border-radius: 50%;
-      animation: spin 0.8s linear infinite;
+      animation: spin 0.75s linear infinite;
     }
+    .spinner-wrap p { color: #555; font-size: 0.85rem; margin-top: 12px; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
+    /* Result card */
     .result-card {
       display: none;
       background: #18181f;
       border: 1px solid #2a2a35;
       border-radius: 14px;
-      padding: 24px;
-      white-space: pre-wrap;
-      font-size: 0.92rem;
-      line-height: 1.65;
-      color: #ccc;
+      overflow: hidden;
     }
     .result-card.visible { display: block; }
-    .result-card.error { border-color: #ff4d4d; color: #ff9999; }
+    .result-card.error { border-color: #ff4d4d55; }
 
-    .result-label {
-      font-size: 0.78rem;
-      color: #555;
-      margin-bottom: 12px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+    .result-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+      border-bottom: 1px solid #2a2a35;
+      background: #13131a;
     }
+    .result-header span { font-size: 0.75rem; color: #555; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; }
+    .copy-btn {
+      background: #1e1e28;
+      border: 1px solid #2a2a35;
+      color: #888;
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .copy-btn:hover { color: #fff; border-color: #6c63ff; }
 
-    footer { margin-top: 40px; color: #333; font-size: 0.8rem; text-align: center; }
+    .result-body { padding: 24px; }
+
+    /* Rendered markdown styles */
+    .result-body h1, .result-body h2 { color: #fff; font-weight: 600; margin-bottom: 12px; margin-top: 20px; }
+    .result-body h1 { font-size: 1.2rem; border-bottom: 1px solid #2a2a35; padding-bottom: 8px; }
+    .result-body h2 { font-size: 1rem; color: #c0b9ff; }
+    .result-body h3 { font-size: 0.9rem; color: #aaa; margin-bottom: 8px; margin-top: 16px; }
+    .result-body p { color: #bbb; line-height: 1.7; margin-bottom: 10px; font-size: 0.92rem; }
+    .result-body strong { color: #e8e8f0; font-weight: 600; }
+    .result-body ul, .result-body ol { color: #bbb; padding-left: 20px; margin-bottom: 10px; }
+    .result-body li { margin-bottom: 4px; font-size: 0.92rem; line-height: 1.6; }
+
+    .result-body table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 0.88rem;
+    }
+    .result-body th {
+      background: #1e1e28;
+      color: #aaa;
+      font-weight: 600;
+      text-align: left;
+      padding: 10px 14px;
+      border: 1px solid #2a2a35;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    .result-body td {
+      padding: 10px 14px;
+      border: 1px solid #2a2a35;
+      color: #ccc;
+      vertical-align: top;
+    }
+    .result-body tr:nth-child(even) td { background: #13131a; }
+    .result-body tr:hover td { background: #1a1a24; }
+
+    .result-body code {
+      background: #1e1e28;
+      color: #b0aaff;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      font-family: "SF Mono", "Fira Code", monospace;
+    }
+    .result-body pre {
+      background: #0f0f13;
+      border: 1px solid #2a2a35;
+      border-radius: 8px;
+      padding: 16px;
+      overflow-x: auto;
+      margin: 12px 0;
+    }
+    .result-body pre code { background: none; padding: 0; color: #b0aaff; }
+    .result-body blockquote {
+      border-left: 3px solid #6c63ff;
+      padding-left: 14px;
+      color: #888;
+      margin: 12px 0;
+      font-style: italic;
+    }
+    .result-body hr { border: none; border-top: 1px solid #2a2a35; margin: 20px 0; }
+
+    .error-msg { color: #ff9999; font-size: 0.9rem; }
+
+    footer { margin-top: 40px; color: #2a2a35; font-size: 0.78rem; text-align: center; }
   </style>
 </head>
 <body>
@@ -154,26 +218,21 @@
 <div class="container">
   <header>
     <h1>Document Processing Agent</h1>
-    <p>Upload a file and describe what you need. The AI handles the rest.</p>
+    <p>Upload a document and describe what you need — the AI handles the rest.</p>
   </header>
 
   <form id="agent-form">
     <div class="card">
-      <label>Upload Document (optional)</label>
+      <label>Document (optional)</label>
       <div class="drop-zone" id="drop-zone">
         <div class="icon">📄</div>
-        <p>Drop a PDF, image, CSV, or Excel file here<br>or click to browse</p>
+        <p>Drop a PDF, image, CSV, or Excel file here · or click to browse</p>
         <div class="file-name" id="file-name"></div>
         <input type="file" id="file-input" accept=".pdf,.jpg,.jpeg,.png,.tiff,.tif,.bmp,.csv,.xlsx,.xls" />
       </div>
 
-      <label>What do you want to do?</label>
-      <textarea
-        id="task-input"
-        name="task"
-        placeholder="e.g. Extract invoice data, validate it, and export to JSON"
-        required
-      ></textarea>
+      <label>Task</label>
+      <textarea id="task-input" placeholder="e.g. Extract invoice data and validate it" required></textarea>
 
       <div class="examples">
         <span class="example-chip" data-task="Extract all invoice data from the uploaded file and validate it">Extract & validate invoice</span>
@@ -187,63 +246,72 @@
     </div>
   </form>
 
-  <div class="spinner" id="spinner"></div>
-
-  <div class="result-card" id="result-card">
-    <div class="result-label">Agent Result</div>
-    <div id="result-text"></div>
+  <div class="spinner-wrap" id="spinner-wrap">
+    <div class="spinner"></div>
+    <p>Processing your document…</p>
   </div>
 
-  <footer>Powered by Claude &nbsp;·&nbsp; Document Processing Agent</footer>
+  <div class="result-card" id="result-card">
+    <div class="result-header">
+      <span>Result</span>
+      <button class="copy-btn" id="copy-btn">Copy</button>
+    </div>
+    <div class="result-body" id="result-body"></div>
+  </div>
+
+  <footer>Powered by Claude · Document Processing Agent</footer>
 </div>
 
 <script>
+  marked.setOptions({ breaks: true, gfm: true });
+
   const dropZone = document.getElementById("drop-zone");
   const fileInput = document.getElementById("file-input");
   const fileNameEl = document.getElementById("file-name");
   const taskInput = document.getElementById("task-input");
   const form = document.getElementById("agent-form");
-  const spinner = document.getElementById("spinner");
+  const spinnerWrap = document.getElementById("spinner-wrap");
   const resultCard = document.getElementById("result-card");
-  const resultText = document.getElementById("result-text");
+  const resultBody = document.getElementById("result-body");
   const submitBtn = document.getElementById("submit-btn");
+  const copyBtn = document.getElementById("copy-btn");
 
-  // File drop zone
+  let lastRawResult = "";
+
   dropZone.addEventListener("click", () => fileInput.click());
   fileInput.addEventListener("change", () => updateFileName(fileInput.files[0]));
-
   dropZone.addEventListener("dragover", e => { e.preventDefault(); dropZone.classList.add("drag-over"); });
   dropZone.addEventListener("dragleave", () => dropZone.classList.remove("drag-over"));
   dropZone.addEventListener("drop", e => {
     e.preventDefault();
     dropZone.classList.remove("drag-over");
-    const f = e.dataTransfer.files[0];
-    if (f) { fileInput.files = e.dataTransfer.files; updateFileName(f); }
+    if (e.dataTransfer.files[0]) { fileInput.files = e.dataTransfer.files; updateFileName(e.dataTransfer.files[0]); }
   });
 
   function updateFileName(file) {
-    if (file) fileNameEl.textContent = "Selected: " + file.name;
-    else fileNameEl.textContent = "";
+    fileNameEl.textContent = file ? "Selected: " + file.name : "";
   }
 
-  // Example chips
   document.querySelectorAll(".example-chip").forEach(chip => {
-    chip.addEventListener("click", () => {
-      taskInput.value = chip.dataset.task;
-      taskInput.focus();
+    chip.addEventListener("click", () => { taskInput.value = chip.dataset.task; taskInput.focus(); });
+  });
+
+  copyBtn.addEventListener("click", () => {
+    navigator.clipboard.writeText(lastRawResult).then(() => {
+      copyBtn.textContent = "Copied!";
+      setTimeout(() => copyBtn.textContent = "Copy", 2000);
     });
   });
 
-  // Form submit
   form.addEventListener("submit", async e => {
     e.preventDefault();
     const task = taskInput.value.trim();
     if (!task) return;
 
     submitBtn.disabled = true;
-    spinner.classList.add("active");
+    spinnerWrap.classList.add("active");
     resultCard.classList.remove("visible", "error");
-    resultText.textContent = "";
+    resultBody.innerHTML = "";
 
     const fd = new FormData();
     fd.append("task", task);
@@ -253,19 +321,22 @@
       const res = await fetch("/process", { method: "POST", body: fd });
       const data = await res.json();
 
+      lastRawResult = data.result || "";
       resultCard.classList.add("visible");
+
       if (data.status === "ok") {
-        resultText.textContent = data.result;
+        resultBody.innerHTML = marked.parse(lastRawResult);
       } else {
         resultCard.classList.add("error");
-        resultText.textContent = "Error: " + data.result;
+        resultBody.innerHTML = `<p class="error-msg">Error: ${lastRawResult}</p>`;
       }
     } catch (err) {
       resultCard.classList.add("visible", "error");
-      resultText.textContent = "Network error: " + err.message;
+      resultBody.innerHTML = `<p class="error-msg">Network error: ${err.message}</p>`;
     } finally {
       submitBtn.disabled = false;
-      spinner.classList.remove("active");
+      spinnerWrap.classList.remove("active");
+      resultCard.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   });
 </script>
