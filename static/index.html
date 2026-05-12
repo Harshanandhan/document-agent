@@ -42,13 +42,39 @@
       text-align: center;
       cursor: pointer;
       transition: border-color 0.2s, background 0.2s;
-      margin-bottom: 20px;
+      margin-bottom: 12px;
     }
     .drop-zone:hover, .drop-zone.drag-over { border-color: #6c63ff; background: rgba(108,99,255,0.05); }
     .drop-zone .icon { font-size: 1.8rem; margin-bottom: 6px; }
     .drop-zone p { color: #555; font-size: 0.85rem; }
-    .drop-zone .file-name { color: #6c63ff; font-size: 0.85rem; margin-top: 8px; font-weight: 500; }
     #file-input { display: none; }
+
+    /* File list */
+    .file-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 20px; }
+    .file-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #1e1e28;
+      border: 1px solid #2a2a35;
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 0.83rem;
+    }
+    .file-item-name { color: #b0aaff; display: flex; align-items: center; gap: 8px; }
+    .file-item-name span { color: #666; font-size: 0.75rem; }
+    .file-remove {
+      background: none;
+      border: none;
+      color: #444;
+      cursor: pointer;
+      font-size: 1rem;
+      line-height: 1;
+      padding: 0 4px;
+      transition: color 0.2s;
+    }
+    .file-remove:hover { color: #ff6b6b; }
+    .file-limit { font-size: 0.75rem; color: #444; text-align: right; margin-bottom: 20px; }
 
     textarea {
       width: 100%;
@@ -98,7 +124,6 @@
     button[type="submit"]:hover { background: #5a52e0; }
     button[type="submit"]:disabled { background: #252530; color: #555; cursor: not-allowed; }
 
-    /* Spinner */
     .spinner-wrap { display: none; text-align: center; padding: 32px; }
     .spinner-wrap.active { display: block; }
     .spinner {
@@ -112,7 +137,6 @@
     .spinner-wrap p { color: #555; font-size: 0.85rem; margin-top: 12px; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* Result card */
     .result-card {
       display: none;
       background: #18181f;
@@ -146,7 +170,6 @@
 
     .result-body { padding: 24px; }
 
-    /* Rendered markdown styles */
     .result-body h1, .result-body h2 { color: #fff; font-weight: 600; margin-bottom: 12px; margin-top: 20px; }
     .result-body h1 { font-size: 1.2rem; border-bottom: 1px solid #2a2a35; padding-bottom: 8px; }
     .result-body h2 { font-size: 1rem; color: #c0b9ff; }
@@ -156,60 +179,26 @@
     .result-body ul, .result-body ol { color: #bbb; padding-left: 20px; margin-bottom: 10px; }
     .result-body li { margin-bottom: 4px; font-size: 0.92rem; line-height: 1.6; }
 
-    .result-body table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 16px 0;
-      font-size: 0.88rem;
-    }
+    .result-body table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 0.88rem; }
     .result-body th {
-      background: #1e1e28;
-      color: #aaa;
-      font-weight: 600;
-      text-align: left;
-      padding: 10px 14px;
-      border: 1px solid #2a2a35;
-      font-size: 0.8rem;
-      text-transform: uppercase;
-      letter-spacing: 0.3px;
+      background: #1e1e28; color: #aaa; font-weight: 600; text-align: left;
+      padding: 10px 14px; border: 1px solid #2a2a35; font-size: 0.8rem;
+      text-transform: uppercase; letter-spacing: 0.3px;
     }
-    .result-body td {
-      padding: 10px 14px;
-      border: 1px solid #2a2a35;
-      color: #ccc;
-      vertical-align: top;
-    }
+    .result-body td { padding: 10px 14px; border: 1px solid #2a2a35; color: #ccc; vertical-align: top; }
     .result-body tr:nth-child(even) td { background: #13131a; }
     .result-body tr:hover td { background: #1a1a24; }
 
     .result-body code {
-      background: #1e1e28;
-      color: #b0aaff;
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-size: 0.85rem;
-      font-family: "SF Mono", "Fira Code", monospace;
+      background: #1e1e28; color: #b0aaff; padding: 2px 6px;
+      border-radius: 4px; font-size: 0.85rem; font-family: "SF Mono", "Fira Code", monospace;
     }
-    .result-body pre {
-      background: #0f0f13;
-      border: 1px solid #2a2a35;
-      border-radius: 8px;
-      padding: 16px;
-      overflow-x: auto;
-      margin: 12px 0;
-    }
+    .result-body pre { background: #0f0f13; border: 1px solid #2a2a35; border-radius: 8px; padding: 16px; overflow-x: auto; margin: 12px 0; }
     .result-body pre code { background: none; padding: 0; color: #b0aaff; }
-    .result-body blockquote {
-      border-left: 3px solid #6c63ff;
-      padding-left: 14px;
-      color: #888;
-      margin: 12px 0;
-      font-style: italic;
-    }
+    .result-body blockquote { border-left: 3px solid #6c63ff; padding-left: 14px; color: #888; margin: 12px 0; font-style: italic; }
     .result-body hr { border: none; border-top: 1px solid #2a2a35; margin: 20px 0; }
 
     .error-msg { color: #ff9999; font-size: 0.9rem; }
-
     footer { margin-top: 40px; color: #2a2a35; font-size: 0.78rem; text-align: center; }
   </style>
 </head>
@@ -218,28 +207,29 @@
 <div class="container">
   <header>
     <h1>Document Processing Agent</h1>
-    <p>Upload a document and describe what you need — the AI handles the rest.</p>
+    <p>Upload up to 5 documents and describe what you need — the AI handles the rest.</p>
   </header>
 
   <form id="agent-form">
     <div class="card">
-      <label>Document (optional)</label>
+      <label>Documents — up to 5 files (optional)</label>
       <div class="drop-zone" id="drop-zone">
         <div class="icon">📄</div>
-        <p>Drop a PDF, image, CSV, or Excel file here · or click to browse</p>
-        <div class="file-name" id="file-name"></div>
-        <input type="file" id="file-input" accept=".pdf,.jpg,.jpeg,.png,.tiff,.tif,.bmp,.csv,.xlsx,.xls" />
+        <p>Drop PDF, image, CSV, or Excel files here · or click to browse</p>
+        <input type="file" id="file-input" accept=".pdf,.jpg,.jpeg,.png,.tiff,.tif,.bmp,.csv,.xlsx,.xls" multiple />
       </div>
 
+      <div class="file-list" id="file-list"></div>
+
       <label>Task</label>
-      <textarea id="task-input" placeholder="e.g. Extract invoice data and validate it" required></textarea>
+      <textarea id="task-input" placeholder="e.g. Extract invoice data from all uploaded files and validate them" required></textarea>
 
       <div class="examples">
-        <span class="example-chip" data-task="Extract all invoice data from the uploaded file and validate it">Extract & validate invoice</span>
+        <span class="example-chip" data-task="Extract all invoice data from the uploaded files and validate each one">Extract & validate invoices</span>
         <span class="example-chip" data-task="Split the uploaded PDF into individual pages">Split PDF pages</span>
-        <span class="example-chip" data-task="Read the uploaded document and summarize the key information">Summarize document</span>
-        <span class="example-chip" data-task="Extract data from the uploaded file and export it as a JSON file">Export as JSON</span>
-        <span class="example-chip" data-task="Read the uploaded image and extract all text and amounts visible">Read scanned image</span>
+        <span class="example-chip" data-task="Read all uploaded documents and summarize the key information from each">Summarize all documents</span>
+        <span class="example-chip" data-task="Extract data from all uploaded files and export combined results as JSON">Export as JSON</span>
+        <span class="example-chip" data-task="Read the uploaded images and extract all visible text and amounts">Read scanned images</span>
       </div>
 
       <button type="submit" id="submit-btn">Run Agent</button>
@@ -248,7 +238,7 @@
 
   <div class="spinner-wrap" id="spinner-wrap">
     <div class="spinner"></div>
-    <p>Processing your document…</p>
+    <p>Processing your documents…</p>
   </div>
 
   <div class="result-card" id="result-card">
@@ -265,9 +255,10 @@
 <script>
   marked.setOptions({ breaks: true, gfm: true });
 
+  const MAX_FILES = 5;
   const dropZone = document.getElementById("drop-zone");
   const fileInput = document.getElementById("file-input");
-  const fileNameEl = document.getElementById("file-name");
+  const fileList = document.getElementById("file-list");
   const taskInput = document.getElementById("task-input");
   const form = document.getElementById("agent-form");
   const spinnerWrap = document.getElementById("spinner-wrap");
@@ -276,21 +267,65 @@
   const submitBtn = document.getElementById("submit-btn");
   const copyBtn = document.getElementById("copy-btn");
 
+  let selectedFiles = [];
   let lastRawResult = "";
 
+  function formatSize(bytes) {
+    if (bytes < 1024) return bytes + " B";
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+    return (bytes / (1024 * 1024)).toFixed(1) + " MB";
+  }
+
+  function renderFileList() {
+    fileList.innerHTML = "";
+    selectedFiles.forEach((file, i) => {
+      const item = document.createElement("div");
+      item.className = "file-item";
+      item.innerHTML = `
+        <div class="file-item-name">
+          <span>${getFileIcon(file.name)}</span>
+          ${file.name} <span>${formatSize(file.size)}</span>
+        </div>
+        <button type="button" class="file-remove" data-index="${i}" title="Remove">✕</button>
+      `;
+      fileList.appendChild(item);
+    });
+    fileList.querySelectorAll(".file-remove").forEach(btn => {
+      btn.addEventListener("click", () => {
+        selectedFiles.splice(parseInt(btn.dataset.index), 1);
+        renderFileList();
+      });
+    });
+  }
+
+  function getFileIcon(name) {
+    const ext = name.split(".").pop().toLowerCase();
+    if (ext === "pdf") return "📕";
+    if (["jpg","jpeg","png","tiff","tif","bmp"].includes(ext)) return "🖼️";
+    if (ext === "csv") return "📊";
+    if (["xlsx","xls"].includes(ext)) return "📗";
+    return "📄";
+  }
+
+  function addFiles(newFiles) {
+    for (const file of newFiles) {
+      if (selectedFiles.length >= MAX_FILES) break;
+      if (!selectedFiles.find(f => f.name === file.name && f.size === file.size)) {
+        selectedFiles.push(file);
+      }
+    }
+    renderFileList();
+  }
+
   dropZone.addEventListener("click", () => fileInput.click());
-  fileInput.addEventListener("change", () => updateFileName(fileInput.files[0]));
+  fileInput.addEventListener("change", () => { addFiles(Array.from(fileInput.files)); fileInput.value = ""; });
   dropZone.addEventListener("dragover", e => { e.preventDefault(); dropZone.classList.add("drag-over"); });
   dropZone.addEventListener("dragleave", () => dropZone.classList.remove("drag-over"));
   dropZone.addEventListener("drop", e => {
     e.preventDefault();
     dropZone.classList.remove("drag-over");
-    if (e.dataTransfer.files[0]) { fileInput.files = e.dataTransfer.files; updateFileName(e.dataTransfer.files[0]); }
+    addFiles(Array.from(e.dataTransfer.files));
   });
-
-  function updateFileName(file) {
-    fileNameEl.textContent = file ? "Selected: " + file.name : "";
-  }
 
   document.querySelectorAll(".example-chip").forEach(chip => {
     chip.addEventListener("click", () => { taskInput.value = chip.dataset.task; taskInput.focus(); });
@@ -315,7 +350,7 @@
 
     const fd = new FormData();
     fd.append("task", task);
-    if (fileInput.files[0]) fd.append("file", fileInput.files[0]);
+    selectedFiles.forEach(file => fd.append("files", file));
 
     try {
       const res = await fetch("/process", { method: "POST", body: fd });

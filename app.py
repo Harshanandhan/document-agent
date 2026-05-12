@@ -44,23 +44,24 @@ async def root():
 @app.post("/process")
 async def process(
     task: str = Form(...),
-    file: UploadFile = File(None),
+    files: list[UploadFile] = File(default=[]),
 ):
-    # Save uploaded file to a temp session folder
     session_dir = UPLOAD_DIR / str(uuid.uuid4())
     session_dir.mkdir(parents=True)
-    file_path = None
 
     try:
-        if file and file.filename:
-            safe_name = Path(file.filename).name
-            file_path = session_dir / safe_name
-            with open(file_path, "wb") as f:
-                shutil.copyfileobj(file.file, f)
+        saved_paths = []
+        for file in files:
+            if file and file.filename:
+                safe_name = Path(file.filename).name
+                dest = session_dir / safe_name
+                with open(dest, "wb") as f:
+                    shutil.copyfileobj(file.file, f)
+                saved_paths.append(str(dest))
 
-            # If the task doesn't mention the file, prepend its path
-            if str(file_path) not in task and safe_name not in task:
-                task = f'File uploaded: "{file_path}". Task: {task}'
+        if saved_paths:
+            files_list = ", ".join(f'"{p}"' for p in saved_paths)
+            task = f"Files uploaded: {files_list}. Task: {task}"
 
         loop = asyncio.get_event_loop()
         result = await loop.run_in_executor(
@@ -74,7 +75,6 @@ async def process(
         return JSONResponse({"status": "error", "result": str(e)}, status_code=500)
 
     finally:
-        # Clean up temp files after response
         try:
             shutil.rmtree(session_dir, ignore_errors=True)
         except Exception:
