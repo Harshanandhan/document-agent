@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Document Processing Agent</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #0f0f13;
+      color: #e8e8f0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 16px;
+    }
+
+    .container { width: 100%; max-width: 760px; }
+
+    header { text-align: center; margin-bottom: 36px; }
+    header h1 { font-size: 2rem; font-weight: 700; color: #fff; letter-spacing: -0.5px; }
+    header p { margin-top: 8px; color: #888; font-size: 0.95rem; }
+
+    .card {
+      background: #18181f;
+      border: 1px solid #2a2a35;
+      border-radius: 14px;
+      padding: 28px;
+      margin-bottom: 20px;
+    }
+
+    label { display: block; font-size: 0.85rem; color: #aaa; margin-bottom: 8px; font-weight: 500; }
+
+    .drop-zone {
+      border: 2px dashed #333;
+      border-radius: 10px;
+      padding: 28px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      margin-bottom: 20px;
+    }
+    .drop-zone:hover, .drop-zone.drag-over {
+      border-color: #6c63ff;
+      background: rgba(108,99,255,0.06);
+    }
+    .drop-zone .icon { font-size: 2rem; margin-bottom: 8px; }
+    .drop-zone p { color: #666; font-size: 0.9rem; }
+    .drop-zone .file-name { color: #6c63ff; font-size: 0.9rem; margin-top: 8px; font-weight: 500; }
+
+    #file-input { display: none; }
+
+    textarea {
+      width: 100%;
+      background: #0f0f13;
+      border: 1px solid #2a2a35;
+      border-radius: 10px;
+      color: #e8e8f0;
+      font-size: 0.95rem;
+      padding: 14px;
+      resize: vertical;
+      min-height: 110px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    textarea:focus { border-color: #6c63ff; }
+    textarea::placeholder { color: #444; }
+
+    .examples {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .example-chip {
+      background: #1e1e28;
+      border: 1px solid #2a2a35;
+      border-radius: 20px;
+      padding: 5px 12px;
+      font-size: 0.78rem;
+      color: #888;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .example-chip:hover { border-color: #6c63ff; color: #c0b9ff; }
+
+    button[type="submit"] {
+      width: 100%;
+      margin-top: 20px;
+      padding: 14px;
+      background: #6c63ff;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button[type="submit"]:hover { background: #5a52e0; }
+    button[type="submit"]:disabled { background: #333; color: #666; cursor: not-allowed; }
+
+    .spinner {
+      display: none;
+      text-align: center;
+      padding: 24px;
+      color: #666;
+    }
+    .spinner.active { display: block; }
+    .spinner::after {
+      content: "";
+      display: inline-block;
+      width: 28px;
+      height: 28px;
+      border: 3px solid #2a2a35;
+      border-top-color: #6c63ff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .result-card {
+      display: none;
+      background: #18181f;
+      border: 1px solid #2a2a35;
+      border-radius: 14px;
+      padding: 24px;
+      white-space: pre-wrap;
+      font-size: 0.92rem;
+      line-height: 1.65;
+      color: #ccc;
+    }
+    .result-card.visible { display: block; }
+    .result-card.error { border-color: #ff4d4d; color: #ff9999; }
+
+    .result-label {
+      font-size: 0.78rem;
+      color: #555;
+      margin-bottom: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    footer { margin-top: 40px; color: #333; font-size: 0.8rem; text-align: center; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>Document Processing Agent</h1>
+    <p>Upload a file and describe what you need. The AI handles the rest.</p>
+  </header>
+
+  <form id="agent-form">
+    <div class="card">
+      <label>Upload Document (optional)</label>
+      <div class="drop-zone" id="drop-zone">
+        <div class="icon">📄</div>
+        <p>Drop a PDF, image, CSV, or Excel file here<br>or click to browse</p>
+        <div class="file-name" id="file-name"></div>
+        <input type="file" id="file-input" accept=".pdf,.jpg,.jpeg,.png,.tiff,.tif,.bmp,.csv,.xlsx,.xls" />
+      </div>
+
+      <label>What do you want to do?</label>
+      <textarea
+        id="task-input"
+        name="task"
+        placeholder="e.g. Extract invoice data, validate it, and export to JSON"
+        required
+      ></textarea>
+
+      <div class="examples">
+        <span class="example-chip" data-task="Extract all invoice data from the uploaded file and validate it">Extract & validate invoice</span>
+        <span class="example-chip" data-task="Split the uploaded PDF into individual pages">Split PDF pages</span>
+        <span class="example-chip" data-task="Read the uploaded document and summarize the key information">Summarize document</span>
+        <span class="example-chip" data-task="Extract data from the uploaded file and export it as a JSON file">Export as JSON</span>
+        <span class="example-chip" data-task="Read the uploaded image and extract all text and amounts visible">Read scanned image</span>
+      </div>
+
+      <button type="submit" id="submit-btn">Run Agent</button>
+    </div>
+  </form>
+
+  <div class="spinner" id="spinner"></div>
+
+  <div class="result-card" id="result-card">
+    <div class="result-label">Agent Result</div>
+    <div id="result-text"></div>
+  </div>
+
+  <footer>Powered by Claude &nbsp;·&nbsp; Document Processing Agent</footer>
+</div>
+
+<script>
+  const dropZone = document.getElementById("drop-zone");
+  const fileInput = document.getElementById("file-input");
+  const fileNameEl = document.getElementById("file-name");
+  const taskInput = document.getElementById("task-input");
+  const form = document.getElementById("agent-form");
+  const spinner = document.getElementById("spinner");
+  const resultCard = document.getElementById("result-card");
+  const resultText = document.getElementById("result-text");
+  const submitBtn = document.getElementById("submit-btn");
+
+  // File drop zone
+  dropZone.addEventListener("click", () => fileInput.click());
+  fileInput.addEventListener("change", () => updateFileName(fileInput.files[0]));
+
+  dropZone.addEventListener("dragover", e => { e.preventDefault(); dropZone.classList.add("drag-over"); });
+  dropZone.addEventListener("dragleave", () => dropZone.classList.remove("drag-over"));
+  dropZone.addEventListener("drop", e => {
+    e.preventDefault();
+    dropZone.classList.remove("drag-over");
+    const f = e.dataTransfer.files[0];
+    if (f) { fileInput.files = e.dataTransfer.files; updateFileName(f); }
+  });
+
+  function updateFileName(file) {
+    if (file) fileNameEl.textContent = "Selected: " + file.name;
+    else fileNameEl.textContent = "";
+  }
+
+  // Example chips
+  document.querySelectorAll(".example-chip").forEach(chip => {
+    chip.addEventListener("click", () => {
+      taskInput.value = chip.dataset.task;
+      taskInput.focus();
+    });
+  });
+
+  // Form submit
+  form.addEventListener("submit", async e => {
+    e.preventDefault();
+    const task = taskInput.value.trim();
+    if (!task) return;
+
+    submitBtn.disabled = true;
+    spinner.classList.add("active");
+    resultCard.classList.remove("visible", "error");
+    resultText.textContent = "";
+
+    const fd = new FormData();
+    fd.append("task", task);
+    if (fileInput.files[0]) fd.append("file", fileInput.files[0]);
+
+    try {
+      const res = await fetch("/process", { method: "POST", body: fd });
+      const data = await res.json();
+
+      resultCard.classList.add("visible");
+      if (data.status === "ok") {
+        resultText.textContent = data.result;
+      } else {
+        resultCard.classList.add("error");
+        resultText.textContent = "Error: " + data.result;
+      }
+    } catch (err) {
+      resultCard.classList.add("visible", "error");
+      resultText.textContent = "Network error: " + err.message;
+    } finally {
+      submitBtn.disabled = false;
+      spinner.classList.remove("active");
+    }
+  });
+</script>
+</body>
+</html>
