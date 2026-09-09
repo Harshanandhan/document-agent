@@ -1,63 +1,56 @@
 # Document Processing Agent
 
-An AI-powered document processing agent built with Claude. Upload invoices, PDFs, spreadsheets, or scanned images and let the agent extract, validate, split, export, and route your documents automatically.
+Lab FastAPI + Claude **tool-use** agent for document workflows (PDF/CSV/Excel/images).
+Upload files + a task; the agent can call local tools (read, split PDF, validate invoice fields, export, copy, mock/real email).
 
-## Features
+This is a **portfolio lab**, not a production multi-tenant product.
 
-- **Extract** structured data from invoices and bills (vendor, amounts, dates, line items)
-- **Read** PDFs, CSV, Excel, and scanned images (via vision)
-- **Split** multi-page PDFs into individual pages or sections
-- **Validate** invoice data — checks required fields and amount math
-- **Export** results to JSON, CSV, or Excel
-- **Save & route** documents to destination folders
-- **Email** documents with attachments (SMTP or mock mode)
+## What the code actually does
 
-## Tech Stack
+- **Web:** FastAPI (`app.py`) — `GET /`, `POST /process`, `GET /health`
+- **Agent loop:** `agent.py` → Anthropic Messages API with tools
+- **Model string in code:** `claude-opus-4-7` with `thinking: { type: "adaptive" }` (requires a working `ANTHROPIC_API_KEY`; not proven in the 2026-09-09 evidence pass)
+- **Local tools:** list/read documents, split PDF, validate invoice dicts, export JSON/CSV/Excel, save/copy, send email (mock unless `SMTP_HOST` set)
+- **Images:** tool path can return base64 image blocks to Claude (vision depends on API/key)
 
-- [Claude API](https://anthropic.com) — `claude-opus-4-7` with adaptive thinking
-- FastAPI — web server
-- pdfplumber — PDF text & table extraction
-- pypdf — PDF splitting
-- pandas — CSV/Excel processing
-- Pillow — image handling
+## Stack
 
-## Getting Started
+- `anthropic` Python SDK
+- FastAPI + Uvicorn
+- pdfplumber, pypdf, pandas, Pillow, openpyxl
+
+## Getting started
 
 ```bash
 pip install -r requirements.txt
-```
-
-Set your Anthropic API key:
-```bash
 export ANTHROPIC_API_KEY=sk-ant-...
-```
-
-Run locally:
-```bash
 uvicorn app:app --reload
 ```
 
-Open `http://localhost:8000` in your browser.
+Open `http://localhost:8000`.
 
-## CLI Usage
+CLI:
 
 ```bash
 python agent.py "Extract invoice data from invoice.pdf and export to JSON"
-python agent.py "Split contract.pdf into single pages and save to ./output"
-python agent.py "Read receipt.png and tell me the total amount"
 ```
 
-## Deployment
+## Evidence (2026-09-09)
 
-Deployed on [Railway](https://railway.app). Set `ANTHROPIC_API_KEY` as an environment variable in the Railway dashboard.
+```text
+import app, agent → ok
+run_agent source contains model "claude-opus-4-7" and thinking adaptive
+```
+
+**Proven:** package imports; model/tool loop present in source.
+**Not proven this run:** live Anthropic call, Railway deploy URL, concurrent "50 users", OCR accuracy, or email delivery.
+**Honesty:** older README claimed Claude-powered automation as if production-ready; treat as lab code that needs your own API key.
+
+## Deploy notes
+
+`Procfile` + `railway.toml` exist for Railway-style hosts. Set `ANTHROPIC_API_KEY` there. No live URL verified here.
 
 ## Author
 
-**Harsha Nandhan Reddy**
-- GitHub: [@Harshanandhan](https://github.com/Harshanandhan)
-- Email: harshanandhan09@gmail.com
-- Python developer · AI/ML Graduate · Blockchain & Web3 · Cybersecurity
-
-## License
-
-MIT
+**Harsha Nandhan Reddy**  
+GitHub: [@Harshanandhan](https://github.com/Harshanandhan)
