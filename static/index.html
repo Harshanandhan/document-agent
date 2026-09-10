@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -7,7 +7,6 @@
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background: #0f0f13;
@@ -18,13 +17,23 @@
       align-items: center;
       padding: 40px 16px;
     }
-
     .container { width: 100%; max-width: 800px; }
-
-    header { text-align: center; margin-bottom: 36px; }
+    header { text-align: center; margin-bottom: 24px; }
     header h1 { font-size: 1.9rem; font-weight: 700; color: #fff; letter-spacing: -0.5px; }
     header p { margin-top: 8px; color: #666; font-size: 0.9rem; }
-
+    .status-banner {
+      border-radius: 10px;
+      padding: 12px 16px;
+      margin-bottom: 20px;
+      font-size: 0.88rem;
+      line-height: 1.5;
+      border: 1px solid #2a2a35;
+      background: #18181f;
+      color: #aaa;
+    }
+    .status-banner.live { border-color: #2d6a4f55; background: #14201a; color: #95d5b2; }
+    .status-banner.gated { border-color: #b0890055; background: #1f1c12; color: #e9c46a; }
+    .status-banner code { background: #0f0f13; padding: 1px 6px; border-radius: 4px; color: #c0b9ff; }
     .card {
       background: #18181f;
       border: 1px solid #2a2a35;
@@ -32,9 +41,7 @@
       padding: 28px;
       margin-bottom: 20px;
     }
-
     label { display: block; font-size: 0.8rem; color: #888; margin-bottom: 8px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; }
-
     .drop-zone {
       border: 2px dashed #2a2a35;
       border-radius: 10px;
@@ -48,8 +55,6 @@
     .drop-zone .icon { font-size: 1.8rem; margin-bottom: 6px; }
     .drop-zone p { color: #555; font-size: 0.85rem; }
     #file-input { display: none; }
-
-    /* File list */
     .file-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 20px; }
     .file-item {
       display: flex;
@@ -64,18 +69,9 @@
     .file-item-name { color: #b0aaff; display: flex; align-items: center; gap: 8px; }
     .file-item-name span { color: #666; font-size: 0.75rem; }
     .file-remove {
-      background: none;
-      border: none;
-      color: #444;
-      cursor: pointer;
-      font-size: 1rem;
-      line-height: 1;
-      padding: 0 4px;
-      transition: color 0.2s;
+      background: none; border: none; color: #444; cursor: pointer; font-size: 1rem; line-height: 1; padding: 0 4px;
     }
     .file-remove:hover { color: #ff6b6b; }
-    .file-limit { font-size: 0.75rem; color: #444; text-align: right; margin-bottom: 20px; }
-
     textarea {
       width: 100%;
       background: #0f0f13;
@@ -88,12 +84,10 @@
       min-height: 100px;
       font-family: inherit;
       outline: none;
-      transition: border-color 0.2s;
       line-height: 1.5;
     }
     textarea:focus { border-color: #6c63ff; }
     textarea::placeholder { color: #3a3a48; }
-
     .examples { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
     .example-chip {
       background: #1e1e28;
@@ -103,10 +97,8 @@
       font-size: 0.75rem;
       color: #777;
       cursor: pointer;
-      transition: border-color 0.2s, color 0.2s;
     }
     .example-chip:hover { border-color: #6c63ff; color: #b0aaff; }
-
     button[type="submit"] {
       width: 100%;
       margin-top: 18px;
@@ -118,12 +110,9 @@
       font-size: 0.95rem;
       font-weight: 600;
       cursor: pointer;
-      transition: background 0.2s;
-      letter-spacing: 0.2px;
     }
     button[type="submit"]:hover { background: #5a52e0; }
     button[type="submit"]:disabled { background: #252530; color: #555; cursor: not-allowed; }
-
     .spinner-wrap { display: none; text-align: center; padding: 32px; }
     .spinner-wrap.active { display: block; }
     .spinner {
@@ -136,7 +125,6 @@
     }
     .spinner-wrap p { color: #555; font-size: 0.85rem; margin-top: 12px; }
     @keyframes spin { to { transform: rotate(360deg); } }
-
     .result-card {
       display: none;
       background: #18181f;
@@ -146,7 +134,6 @@
     }
     .result-card.visible { display: block; }
     .result-card.error { border-color: #ff4d4d55; }
-
     .result-header {
       display: flex;
       align-items: center;
@@ -164,75 +151,60 @@
       border-radius: 6px;
       font-size: 0.75rem;
       cursor: pointer;
-      transition: color 0.2s, border-color 0.2s;
     }
     .copy-btn:hover { color: #fff; border-color: #6c63ff; }
-
     .result-body { padding: 24px; }
-
     .result-body h1, .result-body h2 { color: #fff; font-weight: 600; margin-bottom: 12px; margin-top: 20px; }
     .result-body h1 { font-size: 1.2rem; border-bottom: 1px solid #2a2a35; padding-bottom: 8px; }
     .result-body h2 { font-size: 1rem; color: #c0b9ff; }
-    .result-body h3 { font-size: 0.9rem; color: #aaa; margin-bottom: 8px; margin-top: 16px; }
     .result-body p { color: #bbb; line-height: 1.7; margin-bottom: 10px; font-size: 0.92rem; }
-    .result-body strong { color: #e8e8f0; font-weight: 600; }
     .result-body ul, .result-body ol { color: #bbb; padding-left: 20px; margin-bottom: 10px; }
     .result-body li { margin-bottom: 4px; font-size: 0.92rem; line-height: 1.6; }
-
-    .result-body table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 0.88rem; }
-    .result-body th {
-      background: #1e1e28; color: #aaa; font-weight: 600; text-align: left;
-      padding: 10px 14px; border: 1px solid #2a2a35; font-size: 0.8rem;
-      text-transform: uppercase; letter-spacing: 0.3px;
-    }
-    .result-body td { padding: 10px 14px; border: 1px solid #2a2a35; color: #ccc; vertical-align: top; }
-    .result-body tr:nth-child(even) td { background: #13131a; }
-    .result-body tr:hover td { background: #1a1a24; }
-
     .result-body code {
       background: #1e1e28; color: #b0aaff; padding: 2px 6px;
       border-radius: 4px; font-size: 0.85rem; font-family: "SF Mono", "Fira Code", monospace;
     }
     .result-body pre { background: #0f0f13; border: 1px solid #2a2a35; border-radius: 8px; padding: 16px; overflow-x: auto; margin: 12px 0; }
     .result-body pre code { background: none; padding: 0; color: #b0aaff; }
-    .result-body blockquote { border-left: 3px solid #6c63ff; padding-left: 14px; color: #888; margin: 12px 0; font-style: italic; }
-    .result-body hr { border: none; border-top: 1px solid #2a2a35; margin: 20px 0; }
-
     .error-msg { color: #ff9999; font-size: 0.9rem; }
+    .docs h3 { color: #c0b9ff; font-size: 0.95rem; margin-bottom: 10px; }
+    .docs p, .docs li { color: #888; font-size: 0.85rem; line-height: 1.6; }
+    .docs ol { padding-left: 18px; margin: 8px 0 12px; }
+    .docs a { color: #b0aaff; }
     footer { margin-top: 40px; color: #2a2a35; font-size: 0.78rem; text-align: center; }
   </style>
 </head>
 <body>
-
 <div class="container">
   <header>
     <h1>Document Processing Agent</h1>
-    <p>Upload up to 5 documents and describe what you need — the AI handles the rest.</p>
+    <p>Portfolio lab — FastAPI + Claude tool-use for PDF/CSV/Excel/image workflows.</p>
   </header>
+
+  <div id="status-banner" class="status-banner">Checking service health…</div>
 
   <form id="agent-form">
     <div class="card">
       <label>Documents — up to 5 files (optional)</label>
       <div class="drop-zone" id="drop-zone">
         <div class="icon">📄</div>
-        <p>Drop PDF, image, CSV, or Excel files here · or click to browse</p>
+        <p>Drop PDF, image, CSV, or Excel files here — or click to browse</p>
         <input type="file" id="file-input" accept=".pdf,.jpg,.jpeg,.png,.tiff,.tif,.bmp,.csv,.xlsx,.xls" multiple />
       </div>
-
       <div class="file-list" id="file-list"></div>
 
       <label>Task</label>
       <textarea id="task-input" placeholder="e.g. Extract invoice data from all uploaded files and validate them" required></textarea>
 
       <div class="examples">
-        <span class="example-chip" data-task="Extract all invoice data from the uploaded files and validate each one">Extract & validate invoices</span>
+        <span class="example-chip" data-task="Extract all invoice data from the uploaded files and validate each one">Extract &amp; validate invoices</span>
         <span class="example-chip" data-task="Split the uploaded PDF into individual pages">Split PDF pages</span>
         <span class="example-chip" data-task="Read all uploaded documents and summarize the key information from each">Summarize all documents</span>
         <span class="example-chip" data-task="Extract data from all uploaded files and export combined results as JSON">Export as JSON</span>
         <span class="example-chip" data-task="Read the uploaded images and extract all visible text and amounts">Read scanned images</span>
       </div>
 
-      <button type="submit" id="submit-btn">Run Agent</button>
+      <button type="submit" id="submit-btn" disabled>Checking…</button>
     </div>
   </form>
 
@@ -249,7 +221,18 @@
     <div class="result-body" id="result-body"></div>
   </div>
 
-  <footer>Powered by Claude · Document Processing Agent</footer>
+  <div class="card docs" id="sample-flow">
+    <h3>Sample flow (always available)</h3>
+    <ol>
+      <li>Open <code>GET /health</code> — confirms process is up and whether <code>ANTHROPIC_API_KEY</code> is set.</li>
+      <li>Upload PDF/CSV/Excel/image(s) and describe a task (extract invoice fields, split PDF, summarize, export JSON).</li>
+      <li><code>POST /process</code> runs the Claude tool-use loop in <code>agent.py</code> (local tools: read, split, validate, export, mock email).</li>
+      <li>Without a valid Railway env key, the UI stays live as a status/demo page and <code>/process</code> returns 503 with setup instructions — it will not fake AI answers.</li>
+    </ol>
+    <p>Source: <a href="https://github.com/Harshanandhan/document-agent" target="_blank" rel="noopener">github.com/Harshanandhan/document-agent</a></p>
+  </div>
+
+  <footer>Lab demo · Harsha Nandhan Reddy · Not a multi-tenant production product</footer>
 </div>
 
 <script>
@@ -266,14 +249,49 @@
   const resultBody = document.getElementById("result-body");
   const submitBtn = document.getElementById("submit-btn");
   const copyBtn = document.getElementById("copy-btn");
+  const statusBanner = document.getElementById("status-banner");
 
   let selectedFiles = [];
   let lastRawResult = "";
+  let liveAi = false;
+
+  async function refreshHealth() {
+    try {
+      const res = await fetch("/health");
+      const data = await res.json();
+      liveAi = !!data.live_ai || !!data.api_key_configured;
+      if (liveAi) {
+        statusBanner.className = "status-banner live";
+        statusBanner.innerHTML = "<strong>Live AI ready.</strong> <code>ANTHROPIC_API_KEY</code> is configured — upload files and run the agent. Health: <a href='/health' style='color:#95d5b2'>/health</a>";
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Run Agent";
+      } else {
+        statusBanner.className = "status-banner gated";
+        statusBanner.innerHTML = "<strong>Status demo (no live AI).</strong> Set <code>ANTHROPIC_API_KEY</code> in Railway Variables, redeploy, then refresh. This page will not claim fake AI results. Health: <a href='/health' style='color:#e9c46a'>/health</a>";
+        submitBtn.disabled = true;
+        submitBtn.textContent = "API key required";
+      }
+    } catch (err) {
+      statusBanner.className = "status-banner gated";
+      statusBanner.textContent = "Could not reach /health — service may still be starting.";
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Unavailable";
+    }
+  }
 
   function formatSize(bytes) {
     if (bytes < 1024) return bytes + " B";
     if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
     return (bytes / (1024 * 1024)).toFixed(1) + " MB";
+  }
+
+  function getFileIcon(name) {
+    const ext = name.split(".").pop().toLowerCase();
+    if (ext === "pdf") return "📕";
+    if (["jpg","jpeg","png","tiff","tif","bmp"].includes(ext)) return "🖼️";
+    if (ext === "csv") return "📊";
+    if (["xlsx","xls"].includes(ext)) return "📗";
+    return "📄";
   }
 
   function renderFileList() {
@@ -286,7 +304,7 @@
           <span>${getFileIcon(file.name)}</span>
           ${file.name} <span>${formatSize(file.size)}</span>
         </div>
-        <button type="button" class="file-remove" data-index="${i}" title="Remove">✕</button>
+        <button type="button" class="file-remove" data-index="${i}" title="Remove">×</button>
       `;
       fileList.appendChild(item);
     });
@@ -296,15 +314,6 @@
         renderFileList();
       });
     });
-  }
-
-  function getFileIcon(name) {
-    const ext = name.split(".").pop().toLowerCase();
-    if (ext === "pdf") return "📕";
-    if (["jpg","jpeg","png","tiff","tif","bmp"].includes(ext)) return "🖼️";
-    if (ext === "csv") return "📊";
-    if (["xlsx","xls"].includes(ext)) return "📗";
-    return "📄";
   }
 
   function addFiles(newFiles) {
@@ -340,6 +349,11 @@
 
   form.addEventListener("submit", async e => {
     e.preventDefault();
+    if (!liveAi) {
+      resultCard.classList.add("visible", "error");
+      resultBody.innerHTML = `<p class="error-msg">Live AI is disabled until ANTHROPIC_API_KEY is set in Railway.</p>`;
+      return;
+    }
     const task = taskInput.value.trim();
     if (!task) return;
 
@@ -355,10 +369,8 @@
     try {
       const res = await fetch("/process", { method: "POST", body: fd });
       const data = await res.json();
-
       lastRawResult = data.result || "";
       resultCard.classList.add("visible");
-
       if (data.status === "ok") {
         resultBody.innerHTML = marked.parse(lastRawResult);
       } else {
@@ -369,11 +381,13 @@
       resultCard.classList.add("visible", "error");
       resultBody.innerHTML = `<p class="error-msg">Network error: ${err.message}</p>`;
     } finally {
-      submitBtn.disabled = false;
+      submitBtn.disabled = !liveAi;
       spinnerWrap.classList.remove("active");
       resultCard.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   });
+
+  refreshHealth();
 </script>
 </body>
 </html>

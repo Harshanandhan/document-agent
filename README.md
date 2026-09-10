@@ -1,17 +1,22 @@
-# Document Processing Agent
+﻿# Document Processing Agent
 
 Lab FastAPI + Claude **tool-use** agent for document workflows (PDF/CSV/Excel/images).
 Upload files + a task; the agent can call local tools (read, split PDF, validate invoice fields, export, copy, mock/real email).
 
 This is a **portfolio lab**, not a production multi-tenant product.
 
+## Live demo
+
+- **URL:** https://luminous-compassion-production-1f80.up.railway.app
+- **Health:** https://luminous-compassion-production-1f80.up.railway.app/health
+- **Honesty:** UI reads `/health`. If `ANTHROPIC_API_KEY` is set in Railway, live agent runs are enabled. If missing, the public page stays up as a status + sample-flow demo and `POST /process` returns 503 (no fake AI).
+
 ## What the code actually does
 
 - **Web:** FastAPI (`app.py`) — `GET /`, `POST /process`, `GET /health`
 - **Agent loop:** `agent.py` → Anthropic Messages API with tools
-- **Model string in code:** `claude-opus-4-7` with `thinking: { type: "adaptive" }` (requires a working `ANTHROPIC_API_KEY`; not proven in the 2026-09-09 evidence pass)
+- **Model string in code:** `claude-opus-4-7` with `thinking: { type: "adaptive" }`
 - **Local tools:** list/read documents, split PDF, validate invoice dicts, export JSON/CSV/Excel, save/copy, send email (mock unless `SMTP_HOST` set)
-- **Images:** tool path can return base64 image blocks to Claude (vision depends on API/key)
 
 ## Stack
 
@@ -29,26 +34,21 @@ uvicorn app:app --reload
 
 Open `http://localhost:8000`.
 
-CLI:
+## Env vars (Railway)
+
+| Variable | Required | Purpose |
+|----------|----------|---------|
+| `ANTHROPIC_API_KEY` | Yes for live AI | Anthropic API key (`sk-ant-...`) |
+| `SMTP_HOST` / related | Optional | Real email instead of mock |
+
+## Deploy
+
+`Procfile` + `railway.toml` included. Prefer Railway for FastAPI.
 
 ```bash
-python agent.py "Extract invoice data from invoice.pdf and export to JSON"
+railway up
+# or link GitHub repo and set ANTHROPIC_API_KEY in Railway Variables
 ```
-
-## Evidence (2026-09-09)
-
-```text
-import app, agent → ok
-run_agent source contains model "claude-opus-4-7" and thinking adaptive
-```
-
-**Proven:** package imports; model/tool loop present in source.
-**Not proven this run:** live Anthropic call, Railway deploy URL, concurrent "50 users", OCR accuracy, or email delivery.
-**Honesty:** older README claimed Claude-powered automation as if production-ready; treat as lab code that needs your own API key.
-
-## Deploy notes
-
-`Procfile` + `railway.toml` exist for Railway-style hosts. Set `ANTHROPIC_API_KEY` there. No live URL verified here.
 
 ## Author
 
